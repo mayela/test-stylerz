@@ -18,6 +18,7 @@ class Date(models.Model):
     specialist = models.ForeignKey(UserProfile, related_name='dates_by_specialist', limit_choices_to={'is_specialist': True})
     start_datetime = models.DateTimeField('Start datime')
     end_datetime = models.DateTimeField('End datime', blank=True)
+    hide = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Date'
@@ -29,3 +30,20 @@ class Date(models.Model):
     def save(self, *args, **kwargs):
         self.end_datetime = self.start_datetime + timedelta(minutes=30)
         super(Date, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.hide = True
+        super(Date, self).save(*args, **kwargs)
+
+
+class DateHidden(Date):
+    class Meta:
+        proxy = True
+        verbose_name = 'Hidden date'
+        verbose_name_plural = 'Hidden dates'
+
+    def __str__(self):
+        customer = self.customer.user.username
+        date = self.start_datetime.strftime('%A %d/%B/%Y %H:%M')
+        return "Deleted {} {}".format(customer, date)
+
